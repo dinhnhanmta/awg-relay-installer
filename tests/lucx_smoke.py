@@ -26,6 +26,7 @@ try:
     cookies = http.cookiejar.CookieJar()
     opener = urllib.request.build_opener(urllib.request.HTTPSHandler(context=context),
                                          urllib.request.HTTPCookieProcessor(cookies))
+    opener.addheaders = [('X-Requested-With', 'XMLHttpRequest')]
     url = info['url']
     for _ in range(50):
         try:
@@ -36,7 +37,10 @@ try:
     else:
         raise RuntimeError('Fresh panel did not become available over verified HTTPS.')
     login = urllib.parse.urlencode({'username': info['username'], 'password': info['password']}).encode()
-    response = json.load(opener.open(urllib.request.Request(url + 'login', data=login), timeout=10))
+    csrf = json.load(opener.open(url + 'csrf-token', timeout=10))['obj']
+    origin = urllib.parse.urlunsplit((*urllib.parse.urlsplit(url)[:2], '', '', ''))
+    response = json.load(opener.open(urllib.request.Request(url + 'login', data=login,
+                        headers={'X-CSRF-Token': csrf, 'Origin': origin}), timeout=10))
     assert response.get('success'), 'Fresh admin login failed'
     backup = opener.open(url + 'panel/api/server/getDb', timeout=15).read()
     assert backup.startswith(b'SQLite format 3\x00'), 'Database download did not return a real SQLite backup'
@@ -45,8 +49,10 @@ try:
             f'--{boundary}\r\nContent-Disposition: form-data; name="db"; filename="empty-panel.db"\r\n'
             'Content-Type: application/octet-stream\r\n\r\n').encode()
     body += backup + f'\r\n--{boundary}--\r\n'.encode()
+    csrf = json.load(opener.open(url + 'csrf-token', timeout=10))['obj']
     request = urllib.request.Request(url + 'panel/api/server/importDB', data=body,
-                                    headers={'Content-Type': 'multipart/form-data; boundary=' + boundary})
+                                    headers={'Content-Type': 'multipart/form-data; boundary=' + boundary,
+                                             'X-CSRF-Token': csrf, 'Origin': origin})
     assert json.load(opener.open(request, timeout=30)).get('success'), 'Panel DB restore failed'
     time.sleep(5)
     for _ in range(30):
