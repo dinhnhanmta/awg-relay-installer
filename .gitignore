@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+*.db
+*.conf
+*.key
+*.pem
+*.tar.gz
+*password*
+*secret*
+.env
+.venv/
+.deployment-secrets/

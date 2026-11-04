@@ -1,0 +1,22 @@
+name: Check installer
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install test dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends python3-cryptography shellcheck
+      - name: Check shell and Python
+        run: |
+          bash -n install.sh
+          shellcheck -e SC1091 install.sh
+          /usr/bin/python3 -m unittest discover -s tests -v
+      - name: Verify help does not need root or change the host
+        run: bash install.sh --help
