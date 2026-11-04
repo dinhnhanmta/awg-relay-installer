@@ -14,6 +14,7 @@ import tempfile
 import time
 import urllib.error
 import urllib.request
+from contextlib import closing
 from pathlib import Path, PurePosixPath
 
 CONFIG = Path(__file__).with_name('lucx.json')
@@ -112,13 +113,37 @@ def configure_database(binary, dbdir, bindir, logdir, info, log):
                 '-listenIP', info['listen'], '-webCert', info['cert'], '-webCertKey', info['key']],
                log, cwd=binary.parent, env=panel_environment(dbdir, bindir, logdir))
     # Upstream CLI can print an error but still return 0; verify the resulting DB.
-    with sqlite3.connect('file:' + str(dbdir / 'x-ui.db') + '?mode=ro', uri=True) as db:
+    with closing(sqlite3.connect(dbdir / 'x-ui.db')) as db:
+        # The CLI can exit with committed data still in -wal. Flush it before
+        # moving only the .db out of staging, or HTTPS/login settings are lost.
+        checkpoint = db.execute('PRAGMA wal_checkpoint(TRUNCATE)').fetchone()
+        require(checkpoint[0] == 0, 'Database LucX mới vẫn đang bận; chưa chuyển file DB.')
         values = dict(db.execute('select key,value from settings'))
-        username = db.execute('select username from users order by id limit 1').fetchone()
+        user = db.execute('select username,password from users order by id limit 1').fetchone()
     expected = {'webPort': str(info['port']), 'webBasePath': info['base_path'],
                 'webListen': info['listen'], 'webCertFile': info['cert'], 'webKeyFile': info['key']}
-    require(username == (info['username'],) and all(values.get(k) == v for k, v in expected.items()),
+    require(user is not None and user[0] == info['username'] and all(values.get(k) == v for k, v in expected.items()),
             'LucX CLI chưa tạo đúng tài khoản/HTTPS. Chưa khởi động panel.')
+    info['credential_fingerprint'] = hashlib.sha256(user[1].encode()).hexdigest()
+
+
+def saved_access(info_file=PANEL_INFO, dbdir=DBDIR):
+    """A retry can re-display our fresh login, never credentials invalidated by restore/edit."""
+    if not info_file.is_file() or not (dbdir / 'x-ui.db').is_file():
+        return None
+    try:
+        info = json.loads(info_file.read_text(encoding='utf-8'))
+        with closing(sqlite3.connect('file:' + str(dbdir / 'x-ui.db') + '?mode=ro', uri=True)) as db:
+            user = db.execute('select username,password from users order by id limit 1').fetchone()
+            settings = dict(db.execute('select key,value from settings'))
+        if (user and user[0] == info['username'] and
+                hashlib.sha256(user[1].encode()).hexdigest() == info['credential_fingerprint'] and
+                settings.get('webBasePath') == info['base_path'] and
+                settings.get('webCertFile') == info['cert'] and settings.get('webPort') == str(info['port'])):
+            return info
+    except (OSError, ValueError, KeyError, sqlite3.Error):
+        pass
+    return None
 
 
 def prepare_lucx(relay_ip, dry_run=False):
@@ -180,6 +205,8 @@ def prepare_lucx(relay_ip, dry_run=False):
 def finish_lucx(info):
     subprocess.run(['systemctl', 'daemon-reload'], check=True)
     subprocess.run(['systemctl', 'enable', '--now', 'x-ui.service'], check=True)
+    if info is None:
+        info = saved_access()
     if info is None:
         print('Hạ tầng đã sẵn sàng. Mở panel LucX hiện có và Restore .db.')
         return

@@ -58,5 +58,19 @@ try:
     else:
         raise RuntimeError('Panel did not return after DB import/restart')
     print('PASS: fresh pinned LucX, verified HTTPS, generated-admin login, DB backup/import, panel restart.')
+except Exception:
+    # Diagnostics are limited and redacted: never dump generated login or DB.
+    status = subprocess.run(['systemctl', 'show', 'x-ui', '-p', 'ActiveState', '-p', 'Result',
+                             '-p', 'ExecMainStatus'], capture_output=True, text=True)
+    print(status.stdout)
+    journal = subprocess.run(['journalctl', '-u', 'x-ui', '-n', '50', '--no-pager'],
+                             capture_output=True, text=True).stdout
+    for line in journal.splitlines():
+        if any(word in line.lower() for word in ['error', 'failed', 'panic', 'denied', 'listen', 'certificate']):
+            for field in ['username', 'password', 'base_path']:
+                if 'info' in globals() and info and info.get(field):
+                    line = line.replace(info[field], '<redacted>')
+            print(line)
+    raise
 finally:
     subprocess.run(['systemctl', 'stop', 'x-ui'], check=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)

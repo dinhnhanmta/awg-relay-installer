@@ -5,7 +5,7 @@ umask 077
 BASE_URL='https://raw.githubusercontent.com/dinhnhanmta/awg-relay-installer/v1.1.0'
 BOOTSTRAP_SHA256='7a24bd5d8367549efc9aa43bceb3e74f72873e2ce78eec6374fa53b166cfe00e'
 CONFIG_SHA256='5dabfcf1983cd39b2b02f2515ebc865471e4399d1ca7cb4f0566248a976efcf0'
-LUCX_SHA256='54ae5cef5a01d3621dda627775bcd0aaf0f0632bf0255899ea95fe17100b62cb'
+LUCX_SHA256='d16418a949bd54726fd6f11c20e267b000d5bb0a2a2af2e9d8246e3daf4df5a9'
 LUCX_CONFIG_SHA256='8ff92621f0f75dba65a59050cdb988c51f617acaf54ff7d727225aecc93593fd'
 
 if [[ "${1:-}" == "--help" || "${1:-}" == "-h" ]]; then
