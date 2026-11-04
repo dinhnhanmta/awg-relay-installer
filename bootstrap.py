@@ -14,6 +14,9 @@ import tempfile
 import urllib.request
 from pathlib import Path, PurePosixPath
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from lucx import prepare_lucx, finish_lucx
+
 from cryptography.exceptions import InvalidTag
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 from cryptography.hazmat.primitives.kdf.scrypt import Scrypt
@@ -160,7 +163,11 @@ def main(argv=None):
         if args.dry_run:
             command += ['--dry-run']
         print('Đã xác thực gói. Bắt đầu:', role, flush=True)
-        return subprocess.call(command)
+        panel_info = prepare_lucx(relay, dry_run=args.dry_run) if role == 'relay' else None
+        result = subprocess.call(command)
+        if result == 0 and role == 'relay' and not args.dry_run:
+            finish_lucx(panel_info)
+        return result
 
 
 if __name__ == '__main__':

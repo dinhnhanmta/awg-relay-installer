@@ -1,6 +1,7 @@
 name: Check installer
 on:
   push:
+    branches: [main, 'release/**']
   pull_request:
 permissions:
   contents: read
@@ -20,3 +21,10 @@ jobs:
           /usr/bin/python3 -m unittest discover -s tests -v
       - name: Verify help does not need root or change the host
         run: bash install.sh --help
+  fresh-panel:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install and exercise a real fresh panel
+        run: sudo --preserve-env=GITHUB_ACTIONS /usr/bin/python3 tests/lucx_smoke.py

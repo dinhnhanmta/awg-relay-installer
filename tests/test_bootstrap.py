@@ -109,7 +109,8 @@ class BootstrapTests(unittest.TestCase):
         self.assertEqual(hashlib.sha256((BASE / 'infrastructure.enc').read_bytes()).hexdigest(),
                          config['encrypted_sha256'])
         shell = (BASE / 'install.sh').read_text(encoding='utf-8')
-        for filename, name in [('bootstrap.py', 'BOOTSTRAP_SHA256'), ('bundle.json', 'CONFIG_SHA256')]:
+        for filename, name in [('bootstrap.py', 'BOOTSTRAP_SHA256'), ('bundle.json', 'CONFIG_SHA256'),
+                               ('lucx.py', 'LUCX_SHA256'), ('lucx.json', 'LUCX_CONFIG_SHA256')]:
             self.assertIn(name + "='" + hashlib.sha256((BASE / filename).read_bytes()).hexdigest() + "'", shell)
         self.assertFalse(config['customer_database_included'])
 

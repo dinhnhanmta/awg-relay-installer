@@ -1,0 +1,20 @@
+{
+  "version": "v3.11.0-lucx.339",
+  "release": {
+    "url": "https://github.com/AlexeyLCP/lucx-ui/releases/download/v3.11.0-lucx.339/x-ui-linux-amd64.tar.gz",
+    "sha256": "fcce4a38fd27f3d8e674a8fe39cbcc8fa06917b7bfb2d3fa69be2772798a0251",
+    "bytes": 162817024
+  },
+  "geodata": {
+    "geoip.dat": {
+      "url": "https://github.com/Loyalsoldier/v2ray-rules-dat/releases/download/202611032326/geoip.dat",
+      "sha256": "06c1d50d0013af57ffe78c5af93f0dc6aa998890f3ee231393816f9117810c4a",
+      "bytes": 16546071
+    },
+    "geosite.dat": {
+      "url": "https://github.com/Loyalsoldier/v2ray-rules-dat/releases/download/202611032326/geosite.dat",
+      "sha256": "0b2a5c5b82b031f6b079f9a5b47814914f3fc94d6c689d081b8634624cfe1d55",
+      "bytes": 11374141
+    }
+  }
+}

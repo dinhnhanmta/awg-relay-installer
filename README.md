@@ -15,13 +15,15 @@ Bộ cài hỏi công việc, IP công khai của relay/exit và **mật khẩu 
 ## Thứ tự khi đổi cả hai VPS
 
 1. Trên **exit mới**, chạy lệnh và chọn **1 — Cài exit mới**. Không cần cài LucX để riêng backhaul hoạt động.
-2. Trên **relay mới**, bạn tự cài LucX tương thích (`v3.11.0-lucx.339` là bản đã dùng), chưa Restore khách. Chạy cùng lệnh và chọn **2 — Cài relay mới**.
-3. Trong panel relay, **Restore/Import database** bằng file `.db` mới nhất đã tải từ panel cũ. Giữ tùy chọn **Keep host settings** nếu có khi chuyển máy.
+2. Trên **relay mới**, chạy cùng lệnh và chọn **2 — Cài relay mới**. Bộ cài tự tải LucX `v3.11.0-lucx.339`, kiểm tra SHA256, cài panel, module kernel và hạ tầng. **Bạn không cần cài LucX trước.**
+3. Khi hoàn tất, terminal in **URL panel HTTPS, username và password** mới. Mở URL đó rồi **Restore/Import database** bằng file `.db` mới nhất đã tải từ panel cũ. Chọn **Keep host settings** để giữ URL/HTTPS mới; tài khoản đăng nhập có thể trở về tài khoản trong backup.
 4. Chạy lại cùng lệnh, chọn **3 — Kiểm tra relay** hoặc **4 — Kiểm tra exit**. Thử điện thoại, DNS/web, IP thoát và traffic; kiểm tra sau reboot trên VPS mới trước khi bỏ máy cũ.
 
 Khách dùng IP phải đổi Endpoint sang `IP_RELAY_MỚI:2445`. Khách dùng domain có thể giữ Endpoint khi DNS được đổi sang relay mới (DNS only).
 
-Firewall của nhà cung cấp cần cho phép **UDP 2445 trên relay** và **UDP 8443 trên exit chỉ từ IP relay**. Bộ cài chỉ quản lý firewall trong VPS.
+Panel mới dùng HTTPS với chứng chỉ tự ký: trình duyệt sẽ yêu cầu chấp nhận chứng chỉ lần đầu. Thông tin đăng nhập được lưu riêng trên relay tại `/etc/x-ui/awg-installer-panel.json`, không đưa lên GitHub. Nếu đã có LucX, bộ cài giữ nguyên database, phiên bản và tài khoản; không tự nâng cấp hoặc reset.
+
+Firewall của nhà cung cấp cần cho phép **UDP 2445 và TCP 2053 trên relay**, **UDP 8443 trên exit chỉ từ IP relay**. Bộ cài chỉ quản lý firewall trong VPS; nếu UFW đang bật, nó cho phép thêm TCP 2053 để mở panel, không tự bật UFW.
 
 ## Nếu chỉ thay một máy
 
@@ -47,6 +49,6 @@ bash <(curl -fsSL https://raw.githubusercontent.com/dinhnhanmta/awg-relay-instal
 
 Có thể truyền `--role exit|relay|check-relay|check-exit|repoint-relay|allow-relay`, `--relay-ip`, `--exit-ip`, `--nic`; mật khẩu vẫn được hỏi ẩn. `--dry-run` dùng cho relay/exit, cần cài sẵn phụ thuộc và không thay đổi hạ tầng.
 
-Gói có engine/tools amd64 đã chạy và mã nguồn upstream tương ứng; module kernel được biên dịch lại cho kernel của relay mới bằng DKMS. Cần APT/Internet và headers khớp kernel. Module đã dùng trên kernel 6.8; kernel khác cần kiểm tra tương thích. Không tự reboot hoặc tự gỡ module AWG khác đang nạp.
+Gói có engine/tools amd64 đã chạy và mã nguồn upstream tương ứng; module kernel được biên dịch lại cho kernel của relay mới bằng DKMS. LucX và geodata được tải trực tiếp từ bản upstream đã ghim, kiểm tra kích thước/SHA256; không làm phình gói khóa mã hóa. Lần đầu relay tải khoảng 163 MB LucX và 28 MB geodata. Cần APT/Internet và headers khớp kernel. Module đã dùng trên kernel 6.8; kernel khác cần kiểm tra tương thích. Không tự reboot hoặc tự gỡ module AWG khác đang nạp.
 
-Đã kiểm tra mã hóa/giải mã, mật khẩu sai/dữ liệu hỏng, checksum, giải nén an toàn và dry-run. Chưa chứng nhận phục hồi đầy đủ trên một VPS trắng; bộ cài không được chạy lại trên hệ thống sản xuất chỉ để kiểm tra.
+CI kiểm tra mã hóa/giải mã, mật khẩu sai/dữ liệu hỏng, checksum, giải nén an toàn, dry-run và cài LucX thật trên Ubuntu runner: mở HTTPS, đăng nhập, tải/Restore database trống và khởi động lại panel. Chưa chứng nhận phục hồi đầy đủ cả hai VPS/backhaul trên VPS trắng; không chạy lại installer trên hệ thống sản xuất chỉ để kiểm tra.
