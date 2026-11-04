@@ -1,5 +1,5 @@
 {
-  "version": "v1.1.0",
+  "version": "v1.1.1",
   "payload_url": "https://raw.githubusercontent.com/dinhnhanmta/awg-relay-installer/v1.0.0/infrastructure.enc",
   "encrypted_sha256": "17062081c33e9249908bf74d8845e3a450d8ab94b999d11da1c5b983c75e27cc",
   "plaintext_sha256": "c6b1e687f402641295492f977812364ba8dfc0032d0234be1713479688a8e2a5",

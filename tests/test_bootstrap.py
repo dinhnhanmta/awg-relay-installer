@@ -3,9 +3,12 @@ import importlib.util
 import io
 import json
 import os
+import select
+import signal
 import sys
 import tarfile
 import tempfile
+import time
 import unittest
 from contextlib import redirect_stdout
 from pathlib import Path
@@ -103,6 +106,67 @@ class BootstrapTests(unittest.TestCase):
         for address in ['127.0.0.1', '192.168.1.1', '::1', 'not-an-ip']:
             with self.assertRaises(RuntimeError):
                 app.public_ip(address)
+
+    def test_prompt_without_terminal(self):
+        with patch.object(app.sys, 'stdin', io.StringIO('1\n')), \
+                patch('builtins.open', side_effect=OSError('no controlling terminal')):
+            with self.assertRaisesRegex(RuntimeError, 'terminal tương tác'):
+                app.read_line('Choice: ')
+
+    def test_prompt_closed_terminal(self):
+        terminal = io.StringIO('')
+        terminal.isatty = lambda: True
+        with patch.object(app.sys, 'stdin', terminal), patch.object(app.sys, 'stderr', io.StringIO()):
+            with self.assertRaisesRegex(RuntimeError, 'Terminal đã đóng'):
+                app.read_line('Choice: ')
+
+    @unittest.skipUnless(sys.platform == 'linux', 'Requires a Linux controlling terminal')
+    def test_real_terminal_menu_and_ip(self):
+        import pty
+        for piped_stdin in (False, True):
+            with self.subTest(piped_stdin=piped_stdin):
+                sys.stdout.flush()
+                sys.stderr.flush()
+                pid, master = pty.fork()
+                if pid == 0:
+                    try:
+                        if piped_stdin:
+                            sys.stdin = io.StringIO('must not read this pipe\n')
+                        role = app.choose_role()
+                        address = app.public_ip(app.read_line('IP: '))
+                        print(f'RESULT:{role}:{address}', flush=True)
+                    except BaseException:
+                        import traceback
+                        traceback.print_exc()
+                        os._exit(1)
+                    os._exit(0)
+                output = bytearray()
+                status = None
+                try:
+                    os.write(master, b'1\n8.8.8.8\n')
+                    deadline = time.monotonic() + 10
+                    while time.monotonic() < deadline:
+                        ready, _, _ = select.select([master], [], [], 0.2)
+                        if ready:
+                            try:
+                                data = os.read(master, 65536)
+                            except OSError:
+                                break  # Linux PTYs return EIO when the child closes the slave.
+                            if not data:
+                                break
+                            output.extend(data)
+                    else:
+                        self.fail('Terminal prompt timed out')
+                    if pid is not None:
+                        _, status = os.waitpid(pid, 0)
+                        pid = None
+                    self.assertEqual(os.waitstatus_to_exitcode(status), 0, output.decode(errors='replace'))
+                    self.assertIn(b'RESULT:exit:8.8.8.8', output)
+                finally:
+                    os.close(master)
+                    if pid is not None:
+                        os.kill(pid, signal.SIGKILL)
+                        os.waitpid(pid, 0)
 
     def test_published_checksums(self):
         config = json.loads((BASE / 'bundle.json').read_text())

@@ -85,12 +85,17 @@ def extract_verified(plain, target):
 
 
 def read_line(prompt):
-    # Read from the controlling terminal even when install.sh is downloaded through curl.
+    # A buffered r+ stream requires seeking, which a terminal cannot support.
+    # Use stdin for SSH sessions and separate handles when stdin belongs to a pipe.
     try:
-        with open('/dev/tty', 'r+') as terminal:
-            terminal.write(prompt)
-            terminal.flush()
-            result = terminal.readline()
+        if sys.stdin.isatty():
+            print(prompt, end='', file=sys.stderr, flush=True)
+            result = sys.stdin.readline()
+        else:
+            with open('/dev/tty', 'w') as output, open('/dev/tty', 'r') as terminal:
+                output.write(prompt)
+                output.flush()
+                result = terminal.readline()
     except OSError as exc:
         raise RuntimeError('Cần terminal tương tác hoặc truyền --role/--relay-ip/--exit-ip.') from exc
     require(bool(result), 'Terminal đã đóng.')

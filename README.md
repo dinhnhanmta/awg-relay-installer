@@ -12,6 +12,8 @@ bash <(curl -fsSL https://raw.githubusercontent.com/dinhnhanmta/awg-relay-instal
 
 Bộ cài hỏi công việc, IP công khai của relay/exit và **mật khẩu khôi phục riêng**. Mật khẩu không hiển thị khi nhập, không được lưu trên GitHub. Cần có `curl` để chạy lệnh đầu; các phụ thuộc còn lại được cài tự động.
 
+Bản `v1.1.1` sửa lỗi đọc terminal khiến bản `v1.1.0` dừng ngay sau menu với thông báo “Cần terminal tương tác”. Nếu gặp lỗi này, chạy lại lệnh trên để tải bản sửa; gói mã hóa và mật khẩu khôi phục giữ nguyên.
+
 ## Thứ tự khi đổi cả hai VPS
 
 1. Trên **exit mới**, chạy lệnh và chọn **1 — Cài exit mới**. Không cần cài LucX để riêng backhaul hoạt động.
@@ -51,4 +53,4 @@ Có thể truyền `--role exit|relay|check-relay|check-exit|repoint-relay|allow
 
 Gói có engine/tools amd64 đã chạy và mã nguồn upstream tương ứng; module kernel được biên dịch lại cho kernel của relay mới bằng DKMS. LucX và geodata được tải trực tiếp từ bản upstream đã ghim, kiểm tra kích thước/SHA256; không làm phình gói khóa mã hóa. Lần đầu relay tải khoảng 163 MB LucX và 28 MB geodata. Cần APT/Internet và headers khớp kernel. Module đã dùng trên kernel 6.8; kernel khác cần kiểm tra tương thích. Không tự reboot hoặc tự gỡ module AWG khác đang nạp.
 
-CI kiểm tra mã hóa/giải mã, mật khẩu sai/dữ liệu hỏng, checksum, giải nén an toàn, dry-run và cài LucX thật trên Ubuntu runner: mở HTTPS, đăng nhập, tải/Restore database trống và khởi động lại panel. Chưa chứng nhận phục hồi đầy đủ cả hai VPS/backhaul trên VPS trắng; không chạy lại installer trên hệ thống sản xuất chỉ để kiểm tra.
+CI kiểm tra nhập menu/IP qua terminal Linux thật và stdin dạng pipe, mã hóa/giải mã, mật khẩu sai/dữ liệu hỏng, checksum, giải nén an toàn, dry-run và cài LucX thật trên Ubuntu runner: mở HTTPS, đăng nhập, tải/Restore database trống và khởi động lại panel. Chưa chứng nhận phục hồi đầy đủ cả hai VPS/backhaul trên VPS trắng; không chạy lại installer trên hệ thống sản xuất chỉ để kiểm tra.

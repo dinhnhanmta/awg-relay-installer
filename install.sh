@@ -2,9 +2,9 @@
 set -Eeuo pipefail
 umask 077
 
-BASE_URL='https://raw.githubusercontent.com/dinhnhanmta/awg-relay-installer/v1.1.0'
-BOOTSTRAP_SHA256='7a24bd5d8367549efc9aa43bceb3e74f72873e2ce78eec6374fa53b166cfe00e'
-CONFIG_SHA256='5dabfcf1983cd39b2b02f2515ebc865471e4399d1ca7cb4f0566248a976efcf0'
+BASE_URL='https://raw.githubusercontent.com/dinhnhanmta/awg-relay-installer/v1.1.1'
+BOOTSTRAP_SHA256='4060a5533bfe7aa2388ae08d8925d02f3123d144004f7d414c37a5e2e27b1f1a'
+CONFIG_SHA256='21ac68b64353c3bf9f23fb473b2b449a616860dfc4ea3fd747a1cf09f1f3cefb'
 LUCX_SHA256='d16418a949bd54726fd6f11c20e267b000d5bb0a2a2af2e9d8246e3daf4df5a9'
 LUCX_CONFIG_SHA256='8ff92621f0f75dba65a59050cdb988c51f617acaf54ff7d727225aecc93593fd'
 
