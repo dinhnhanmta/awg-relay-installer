@@ -14,6 +14,10 @@ Bộ cài hỏi công việc, IP công khai của relay/exit và **mật khẩu 
 
 Bản `v1.1.1` sửa lỗi đọc terminal khiến bản `v1.1.0` dừng ngay sau menu với thông báo “Cần terminal tương tác”. Nếu gặp lỗi này, chạy lại lệnh trên để tải bản sửa; gói mã hóa và mật khẩu khôi phục giữ nguyên.
 
+## Bypass IP Nga cho khách được chọn
+
+Relay đã dựng xong và Restore database có thể cài tiện ích riêng bằng một lệnh; xem [hướng dẫn bật/tắt bypass IPv4 Nga](RU_BYPASS.md). Tiện ích chỉ áp dụng cho khách được chỉ định, không được tự bật khi cài hạ tầng chính.
+
 ## Thứ tự khi đổi cả hai VPS
 
 1. Trên **exit mới**, chạy lệnh và chọn **1 — Cài exit mới**. Không cần cài LucX để riêng backhaul hoạt động.
