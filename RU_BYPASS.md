@@ -1,39 +1,39 @@
-# Bypass IPv4 Nga cho khách được chọn
+# Bypass IPv4 Nga cho toàn bộ khách AWG
 
-Tiện ích riêng cho **relay đã dựng bằng bộ cài trong repo này và đã Restore database LucX**. Không chạy trên exit. Không cần mật khẩu gói khóa để dùng tiện ích này.
+Phiên bản2: **`ru-bypass on` và `ru-bypass off` áp dụng cho toàn bộ khách AWG kernel thuộc subnet `10.8.0.0/24`**. Khi bật, khách tạo mới trong subnet này tự động hưởng cùng chính sách; không cần truyền tên hay chạy lại lệnh. Khách vẫn phải được LucX nạp vào AWG kernel theo trạng thái/quyền sử dụng của họ.
 
-Đăng nhập root trên relay. Một lệnh để cài và bật:
+Chạy bằng root trên **relay đã dựng bằng bộ cài trong repo này và đã Restore database LucX**. Không chạy trên exit.
+
+Cài/cập nhật và bật cho tất cả khách:
 
 ```bash
-bash <(curl -fsSL https://raw.githubusercontent.com/dinhnhanmta/awg-relay-installer/main/ru-bypass.sh) install --clients 'TEN_KHACH_1,TEN_KHACH_2,TEN_KHACH_3'
+bash <(curl -fsSL https://raw.githubusercontent.com/dinhnhanmta/awg-relay-installer/main/ru-bypass.sh) install
 ```
 
-Thay các tên bằng tên khách chính xác trong LucX, phân cách bằng dấu phẩy. Nếu bỏ `--clients`, tiện ích hỏi tên qua terminal. Chọn từ1 đến20 khách. Khách phải đang bật, có địa chỉ IPv4 `/32` riêng thuộc `10.8.0.0/24` và đã được nạp vào AWG kernel `xui-awg1`.
-
-Sau khi cài:
+Nếu chỉ muốn cập nhật lệnh, giữ nguyên chế độ đang chạy:
 
 ```bash
-ru-bypass status
-ru-bypass off
+bash <(curl -fsSL https://raw.githubusercontent.com/dinhnhanmta/awg-relay-installer/main/ru-bypass.sh) setup
+```
+
+Sau khi cập nhật:
+
+```bash
 ru-bypass on
+ru-bypass off
+ru-bypass status
 ```
 
-- `on`: kết nối IPv4 mới tới IP Nga đi trực tiếp qua WAN relay; IP khác tiếp tục qua foreign exit `awg32`. Không tự hết hạn.
-- `off`: gỡ riêng rule của tiện ích, trả lưu lượng về tuyến foreign exit cũ.
-- `status`: xem trạng thái, danh sách khách và lịch hoàn tác nếu có.
+- `on`: kết nối IPv4 mới tới IP Nga đi trực tiếp qua WAN relay; IP khác vẫn qua foreign exit `awg32`. Áp dụng cho mọi khách AWG hiện tại và khách mới trong `10.8.0.0/24`. Không tự hết hạn.
+- `off`: gỡ riêng bypass IP Nga cho toàn bộ khách, đưa lưu lượng về tuyến foreign exit cũ.
+- `status`: xem trạng thái và phạm vi. Nếu vừa nâng cấp từ bản thử theo tên mà chưa chạy `on`, nó báo rõ `LEGACY SELECTED MODE` khi bản thử cũ còn hoạt động.
 
-Có thể tắt bằng lệnh tải lại tiện ích:
+Không còn dùng `--clients` hoặc danh sách tên khách ở phiên bản2. `on` chuyển bản thử cũ sang toàn subnet bằng một giao dịch nftables; `setup` không tự mở rộng phạm vi đang chạy. Tiện ích nhận diện và giữ trạng thái từ bản quản lý cũ, không cần tự gỡ trước.
 
-```bash
-bash <(curl -fsSL https://raw.githubusercontent.com/dinhnhanmta/awg-relay-installer/main/ru-bypass.sh) off
-```
+Sau khi bật/tắt, kết nối lại VPN và mở lại ứng dụng để thay kết nối cũ. Tiện ích không xóa conntrack toàn máy. **Reboot sẽ mất bypass**; chạy `ru-bypass on` để bật lại. Tự áp dụng cho khách mới không có nghĩa là tự bật sau reboot. Chưa có tự khởi động hoặc tự cập nhật danh sách.
 
-Sau khi bật/tắt, kết nối lại VPN và mở lại ứng dụng để thay các kết nối cũ. Tiện ích không xóa conntrack toàn máy. Chế độ chỉ tồn tại trong phiên chạy của VPS: **reboot sẽ mất bypass**, sau đó chạy `ru-bypass on` để bật lại. Chưa có tự khởi động hoặc tự cập nhật danh sách.
+Đây là IPv4 IP-only bypass cho AWG kernel `xui-awg1`; không áp dụng cho VLESS/REALITY, domain, DNS hoặc IPv6. Các quy tắc chặn mạng nội bộ và MSS Telegram hiện hữu được giữ nguyên. Tiện ích không restart panel/tunnel, sửa database/cấu hình điện thoại hay mở cổng mới. Khi bật có kiểm tra tài nguyên policy routing, guard/gateway hiện tại và hoàn tác nếu áp dụng thất bại.
 
-Tiện ích kiểm tra routing/NAT/hoàn tác trong network namespace biệt lập trước khi cài. Khi bật, nó xác minh khách đang tồn tại, gateway WAN, guard hiện tại và tài nguyên policy routing chưa bị chiếm; có hoàn tác nếu áp dụng thất bại. Không restart panel/tunnel, sửa database, DNS, cấu hình điện thoại hay mở cổng mới. Các khách không được chọn giữ tuyến cũ. Các rule MSS Telegram hiện hữu được giữ nguyên. Không thay danh sách khách khi cài lại trên cùng VPS; tiện ích sẽ dừng nếu phạm vi khác.
+Nguồn GeoIP: [Loyalsoldier/geoip](https://github.com/Loyalsoldier/geoip), `text/ru.txt`, ghim commit `eace600e4e2d6708de3948b047ff9ff7bc5b5b11`, SHA256 `779e867ddeec1aca1e9501cc8cfe45f9c5d77531512a36c58d51e949da49adde`, 13069 dải IPv4. Bộ cài không chứa thông tin khách hoặc khóa.
 
-Nguồn GeoIP: [Loyalsoldier/geoip](https://github.com/Loyalsoldier/geoip), file `text/ru.txt`, ghim commit `eace600e4e2d6708de3948b047ff9ff7bc5b5b11`, SHA256 `779e867ddeec1aca1e9501cc8cfe45f9c5d77531512a36c58d51e949da49adde`, 13069 dải IPv4. Đây là phân loại **địa chỉ IP**, chưa phải danh sách domain Nga. IPv6 giữ chính sách sẵn có của relay.
-
-Bộ cài công khai không chứa thông tin khách hoặc khóa. Nó đọc tên/IP từ database ngay trên VPS và lưu cấu hình tại `/root/amnezia-relay-deploy/ru-bypass/`; các lần bật có thư mục `runs/` và bản chụp trước thay đổi riêng. Cài lại trên relay có bản thử ba khách tương thích sẽ sử dụng lệnh quản lý hiện hữu, giữ nguyên phạm vi đó.
-
-Đã kiểm tra mạng dữ liệu trong namespace Linux, bao gồm bật/tắt lặp lại. Chưa chứng nhận cho kiến trúc, subnet hoặc firewall ngoài bộ cài của repo. Nếu cấu hình không tương thích, tiện ích dừng thay vì thay thế guard hiện tại.
+File được lưu tại `/root/amnezia-relay-deploy/ru-bypass-all-v2/`. Các lần bật có thư mục `runs/`, bản chụp trước thay đổi và script hoàn tác riêng. Đã kiểm tra trong namespace Linux: bật/tắt lặp lại, khách mới tự áp dụng và chuyển từ danh sách khách sang toàn subnet. Chưa chứng nhận cho subnet/kiến trúc/firewall ngoài bộ cài của repo; cấu hình không tương thích sẽ dừng để kiểm tra.
