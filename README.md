@@ -14,9 +14,9 @@ Bộ cài hỏi công việc, IP công khai của relay/exit và **mật khẩu 
 
 Bản `v1.1.1` sửa lỗi đọc terminal khiến bản `v1.1.0` dừng ngay sau menu với thông báo “Cần terminal tương tác”. Nếu gặp lỗi này, chạy lại lệnh trên để tải bản sửa; gói mã hóa và mật khẩu khôi phục giữ nguyên.
 
-## Bypass IP Nga cho khách được chọn
+## Bypass IP Nga cho toàn bộ khách AWG
 
-Relay đã dựng xong và Restore database có thể cài tiện ích riêng bằng một lệnh; xem [hướng dẫn bật/tắt bypass IPv4 Nga](RU_BYPASS.md). Tiện ích chỉ áp dụng cho khách được chỉ định, không được tự bật khi cài hạ tầng chính.
+Relay đã dựng xong và Restore database có thể cài tiện ích riêng bằng một lệnh; xem [hướng dẫn bật/tắt bypass IPv4 Nga](RU_BYPASS.md). `ru-bypass on/off` quản lý toàn bộ subnet AWG `10.8.0.0/24`, tự áp dụng cho khách mới khi đang bật. Bộ cài hạ tầng chính không tự bật tiện ích này.
 
 ## Thứ tự khi đổi cả hai VPS
 
